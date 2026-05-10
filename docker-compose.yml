@@ -1,0 +1,42 @@
+services:
+  api1: &api
+    image: pedrosakuma/rinha-gpu-bruteforce:latest
+    platform: linux/amd64
+    command:
+      - --serve
+      - --backend
+      - vulkan
+      - --listen
+      - 0.0.0.0:8080
+      - --skip-validate
+      - --require-resource-files
+      - --references-path
+      - /app/resources/references.json.gz
+      - --mcc-risk-path
+      - /app/resources/mcc_risk.json
+      - --normalization-path
+      - /app/resources/normalization.json
+    devices:
+      - /dev/dri:/dev/dri
+    deploy:
+      resources:
+        limits:
+          cpus: "0.40"
+          memory: "160M"
+
+  api2:
+    <<: *api
+
+  lb:
+    image: pedrosakuma/rinha-gpu-bruteforce-lb:latest
+    platform: linux/amd64
+    depends_on:
+      - api1
+      - api2
+    ports:
+      - "9999:9999"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: "30M"
