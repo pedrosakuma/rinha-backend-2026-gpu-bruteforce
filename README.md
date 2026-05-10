@@ -48,8 +48,11 @@ This repository now includes a submission-shaped topology:
   balancer on port `9999`.
 - `Dockerfile.lb` embeds `nginx.conf` in the load-balancer image; there is no
   runtime config volume.
-- API limits are `0.40 CPU / 160M` each; LB limit is `0.20 CPU / 30M`, totaling
+- API limits are `0.49 CPU / 160M` each; LB limit is `0.02 CPU / 30M`, totaling
   `1.00 CPU / 350M`.
+- The compose command keeps the full 3M references on hardware adapters, but caps
+  the effective reference count on CPU-only `wgpu` adapters so the official
+  GitHub Actions smoke test can finish without a render device.
 - The API containers bind `/dev/dri` and allow the DRM render cgroup rule without
   `privileged` or `host` networking so the Mac Mini Intel/Mesa Vulkan adapter can
   be tested.

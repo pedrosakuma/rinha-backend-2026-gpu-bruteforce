@@ -87,6 +87,10 @@ struct Args {
     #[arg(long)]
     force_fallback_adapter: bool,
 
+    /// Limit references only when wgpu selects a CPU adapter; useful for CI smoke tests without /dev/dri.
+    #[arg(long, default_value_t = 0)]
+    cpu_adapter_reference_limit: usize,
+
     /// Serve the competition HTTP surface instead of running the microbench.
     #[arg(long)]
     serve: bool,
@@ -227,6 +231,7 @@ struct GpuEngine {
     readback_buffer: wgpu::Buffer,
     labels: PackedLabels,
     output_size: u64,
+    reference_count: usize,
     workgroup_count: u32,
     reference_chunk_count: usize,
     refs_per_chunk: u32,
@@ -350,7 +355,7 @@ fn main() -> Result<()> {
     let reference_count = references.len();
     let queries = generate_queries(args.queries, args.seed ^ 0xa076_1d64_78bd_642f);
     let engine = pollster::block_on(GpuEngine::new(&args, &references))?;
-    let memory_plan = MemoryPlan::new(reference_count);
+    let memory_plan = MemoryPlan::new(engine.reference_count);
 
     println!(
         "environment_note=local benchmark results describe this machine/driver only; the target Rinha environment may differ"
@@ -954,7 +959,15 @@ impl GpuEngine {
             .ok_or_else(|| anyhow!("no compatible wgpu adapter found"))?;
 
         let adapter_info = adapter.get_info();
-        let reference_count = references.len();
+        let loaded_reference_count = references.len();
+        let reference_count =
+            effective_reference_count(args, loaded_reference_count, adapter_info.device_type);
+        if reference_count != loaded_reference_count {
+            println!(
+                "cpu_adapter_reference_limit loaded_references={} effective_references={}",
+                loaded_reference_count, reference_count
+            );
+        }
         if reference_count > u32::MAX as usize {
             bail!("reference count cannot exceed u32::MAX because GPU indices are u32");
         }
@@ -995,8 +1008,8 @@ impl GpuEngine {
             .context("failed to create wgpu device")?;
 
         let mut reference_buffers = Vec::with_capacity(MAX_REFERENCE_BUFFERS);
-        for (chunk_index, chunk) in references
-            .packed_vectors
+        let packed_reference_len = reference_count * PACKED_DIMS;
+        for (chunk_index, chunk) in references.packed_vectors[..packed_reference_len]
             .chunks(refs_per_chunk * PACKED_DIMS)
             .enumerate()
         {
@@ -1114,6 +1127,7 @@ impl GpuEngine {
             readback_buffer,
             labels: references.labels.clone(),
             output_size,
+            reference_count,
             workgroup_count,
             reference_chunk_count,
             refs_per_chunk: refs_per_chunk as u32,
@@ -1173,6 +1187,18 @@ impl GpuEngine {
         self.readback_buffer.unmap();
 
         Ok(top)
+    }
+}
+
+fn effective_reference_count(
+    args: &Args,
+    loaded_reference_count: usize,
+    device_type: wgpu::DeviceType,
+) -> usize {
+    if args.cpu_adapter_reference_limit > 0 && device_type == wgpu::DeviceType::Cpu {
+        args.cpu_adapter_reference_limit.min(loaded_reference_count)
+    } else {
+        loaded_reference_count
     }
 }
 

@@ -9,6 +9,8 @@ services:
       - --listen
       - 0.0.0.0:8080
       - --skip-validate
+      - --cpu-adapter-reference-limit
+      - "100000"
       - --require-resource-files
       - --references-path
       - /app/resources/references.json.gz
@@ -25,7 +27,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.40"
+          cpus: "0.49"
           memory: "160M"
 
   api2:
@@ -42,5 +44,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.20"
+          cpus: "0.02"
           memory: "30M"
