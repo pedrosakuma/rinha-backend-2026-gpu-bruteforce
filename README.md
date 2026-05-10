@@ -53,10 +53,10 @@ This repository now includes a submission-shaped topology:
 - The compose command keeps the full 3M references on hardware adapters, but caps
   the effective reference count on CPU-only `wgpu` adapters so the official
   GitHub Actions smoke test can finish without a render device.
-- The API containers expose `/dev/dri/card0` and `/dev/dri/renderD128` through
-  `devices` and allow the DRM render cgroup rule without `volumes`,
-  `privileged`, or `host` networking so the Mac Mini Intel/Mesa Vulkan adapter
-  can be tested.
+- The submission compose avoids `volumes`, `devices`, `privileged`, and `host`
+  networking so it starts on preview runners even when no `/dev/dri` nodes are
+  exposed. When `wgpu` selects a CPU adapter, the command caps the effective
+  reference count to keep preview smoke responsive.
 
 Before building the API image, put the official resource files in the build
 context:

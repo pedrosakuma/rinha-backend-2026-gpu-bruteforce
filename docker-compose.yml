@@ -18,11 +18,6 @@ services:
       - /app/resources/mcc_risk.json
       - --normalization-path
       - /app/resources/normalization.json
-    devices:
-      - /dev/dri/card0:/dev/dri/card0:rwm
-      - /dev/dri/renderD128:/dev/dri/renderD128:rwm
-    device_cgroup_rules:
-      - "c 226:* rmw"
     deploy:
       resources:
         limits:
