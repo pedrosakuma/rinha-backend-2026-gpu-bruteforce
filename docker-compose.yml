@@ -1,6 +1,6 @@
 services:
   api1: &api
-    image: pedrosakuma/rinha-gpu-bruteforce:latest
+    image: ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce:latest
     platform: linux/amd64
     command:
       - --serve
@@ -16,8 +16,12 @@ services:
       - /app/resources/mcc_risk.json
       - --normalization-path
       - /app/resources/normalization.json
-    devices:
-      - /dev/dri:/dev/dri
+    volumes:
+      - type: bind
+        source: /dev/dri
+        target: /dev/dri
+    device_cgroup_rules:
+      - "c 226:* rmw"
     deploy:
       resources:
         limits:
@@ -28,7 +32,7 @@ services:
     <<: *api
 
   lb:
-    image: pedrosakuma/rinha-gpu-bruteforce-lb:latest
+    image: ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce-lb:latest
     platform: linux/amd64
     depends_on:
       - api1

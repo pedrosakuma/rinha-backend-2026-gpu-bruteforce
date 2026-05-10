@@ -50,8 +50,9 @@ This repository now includes a submission-shaped topology:
   runtime config volume.
 - API limits are `0.40 CPU / 160M` each; LB limit is `0.20 CPU / 30M`, totaling
   `1.00 CPU / 350M`.
-- The API containers map `/dev/dri:/dev/dri` without `privileged` or `host`
-  networking so the Mac Mini Intel/Mesa Vulkan adapter can be tested.
+- The API containers bind `/dev/dri` and allow the DRM render cgroup rule without
+  `privileged` or `host` networking so the Mac Mini Intel/Mesa Vulkan adapter can
+  be tested.
 
 Before building the API image, put the official resource files in the build
 context:
@@ -65,17 +66,17 @@ resources/normalization.json
 Then run:
 
 ```bash
-docker build -t pedrosakuma/rinha-gpu-bruteforce:latest .
-docker build -t pedrosakuma/rinha-gpu-bruteforce-lb:latest -f Dockerfile.lb .
+docker build -t ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce:latest .
+docker build -t ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce-lb:latest -f Dockerfile.lb .
 docker compose up
 curl -s http://localhost:9999/ready
 ```
 
 For actual submission, publish the image referenced by `docker-compose.yml`
-(`pedrosakuma/rinha-gpu-bruteforce:latest`) and the LB image
-(`pedrosakuma/rinha-gpu-bruteforce-lb:latest`) as public `linux-amd64` images,
-or change the compose file to the image names you publish. The compose file
-intentionally contains no `build:` and no resource/config volumes.
+(`ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce:latest`) and the LB image
+(`ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce-lb:latest`) as public
+`linux-amd64` images. The compose file intentionally contains no `build:` and no
+resource/config volumes.
 
 ## Official participants entry
 

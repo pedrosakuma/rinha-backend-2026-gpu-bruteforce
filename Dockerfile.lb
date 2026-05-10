@@ -1,3 +1,6 @@
 FROM nginx:1.27-alpine
 
+LABEL org.opencontainers.image.source="https://github.com/pedrosakuma/rinha-backend-2026-gpu-bruteforce" \
+      org.opencontainers.image.licenses="MIT"
+
 COPY nginx.conf /etc/nginx/nginx.conf

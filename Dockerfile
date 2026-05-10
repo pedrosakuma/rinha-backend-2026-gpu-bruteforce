@@ -13,6 +13,9 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim
 
+LABEL org.opencontainers.image.source="https://github.com/pedrosakuma/rinha-backend-2026-gpu-bruteforce" \
+      org.opencontainers.image.licenses="MIT"
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libvulkan1 mesa-vulkan-drivers ca-certificates \
     && rm -rf /var/lib/apt/lists/*
