@@ -53,9 +53,10 @@ This repository now includes a submission-shaped topology:
 - The compose command keeps the full 3M references on hardware adapters, but caps
   the effective reference count on CPU-only `wgpu` adapters so the official
   GitHub Actions smoke test can finish without a render device.
-- The API containers bind `/dev/dri` and allow the DRM render cgroup rule without
-  `privileged` or `host` networking so the Mac Mini Intel/Mesa Vulkan adapter can
-  be tested.
+- The API containers expose `/dev/dri/card0` and `/dev/dri/renderD128` through
+  `devices` and allow the DRM render cgroup rule without `volumes`,
+  `privileged`, or `host` networking so the Mac Mini Intel/Mesa Vulkan adapter
+  can be tested.
 
 Before building the API image, put the official resource files in the build
 context:
@@ -79,7 +80,7 @@ For actual submission, publish the image referenced by `docker-compose.yml`
 (`ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce:latest`) and the LB image
 (`ghcr.io/pedrosakuma/rinha-backend-2026-gpu-bruteforce-lb:latest`) as public
 `linux-amd64` images. The compose file intentionally contains no `build:` and no
-resource/config volumes.
+volumes.
 
 ## Official participants entry
 
